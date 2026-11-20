@@ -32,8 +32,9 @@ app.post('/api/create-payment', async (req, res) => {
     const referenceId = 'ORD' + Date.now().toString().slice(-8) + Math.floor(1000 + Math.random() * 9000);
 
     // Standard NPCI UPI URI Specification:
-    // upi://pay?pa=<VPA>&pn=<PayeeName>&am=<Amount>&cu=INR&tn=<Note/RefId>&tr=<TransactionRef>
-    const upiUri = `upi://pay?pa=${encodeURIComponent(UPI_VPA.trim())}&pn=${encodeURIComponent(PAYEE_NAME.trim())}&am=${orderAmount.toFixed(2)}&cu=INR&tn=${encodeURIComponent(purpose || 'Payment for ' + referenceId)}&tr=${referenceId}`;
+    // For individual VPAs, passing merchant params like 'tr=' or 'mc=' triggers security blocks ('Something went wrong').
+    // Clean format accepted by ALL UPI apps (PhonePe, GPay, Paytm, BHIM):
+    const upiUri = `upi://pay?pa=${encodeURIComponent(UPI_VPA.trim())}&pn=${encodeURIComponent(PAYEE_NAME.trim())}&am=${orderAmount.toFixed(2)}&cu=INR&tn=${encodeURIComponent(purpose || 'Payment')}`;
 
     // Generate high-resolution QR code as Data URL
     const qrImage = await QRCode.toDataURL(upiUri, {

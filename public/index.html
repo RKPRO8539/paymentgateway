@@ -68,8 +68,11 @@
         </div>
       </div>
 
-      <div class="upi-apps" id="intentApps">
-        <a id="intentLink" class="upi-btn" href="#">⚡ Pay on Mobile App</a>
+      <div class="upi-apps" id="intentApps" style="flex-wrap: wrap; justify-content: center; gap: 8px;">
+        <a id="intentLink" class="upi-btn" href="#">⚡ Open Default UPI App</a>
+        <a id="gpayLink" class="upi-btn" style="background: #4285F4;" href="#">GPay</a>
+        <a id="phonepeLink" class="upi-btn" style="background: #5f259f;" href="#">PhonePe</a>
+        <a id="paytmLink" class="upi-btn" style="background: #00baf2;" href="#">Paytm</a>
       </div>
 
       <div>
@@ -125,7 +128,14 @@
           document.getElementById('qrImage').src = data.qrImage;
           document.getElementById('displayAmount').innerText = '₹' + parseFloat(data.amount).toFixed(2);
           document.getElementById('merchantTitle').innerText = data.payeeName;
-          document.getElementById('intentLink').href = data.upiUri;
+          const rawUri = data.upiUri;
+          document.getElementById('intentLink').href = rawUri;
+
+          // App-specific direct packages
+          const queryPart = rawUri.replace(/^upi:\/\/pay\?/, '');
+          document.getElementById('gpayLink').href = 'tez://upi/pay?' + queryPart;
+          document.getElementById('phonepeLink').href = 'phonepe://pay?' + queryPart;
+          document.getElementById('paytmLink').href = 'paytmmp://pay?' + queryPart;
         } else {
           alert('Error: ' + (data.message || 'Could not generate payment'));
           payBtn.disabled = false;
