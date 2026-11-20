@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Direct UPI Payment - RK Solutions</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: #0f172a; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+    .card { background: #ffffff; width: 100%; max-width: 440px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.25); padding: 32px; }
+    .header { text-align: center; margin-bottom: 24px; }
+    .header .badge { display: inline-block; background: #e0f2fe; color: #0369a1; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; margin-bottom: 8px; }
+    .header h2 { color: #0f172a; font-size: 24px; font-weight: 800; }
+    .header p { color: #64748b; font-size: 13px; margin-top: 4px; }
+    .form-group { margin-bottom: 18px; }
+    label { display: block; font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 6px; }
+    input { width: 100%; padding: 12px 16px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 15px; outline: none; transition: 0.2s; }
+    input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
+    .btn { width: 100%; background: #2563eb; color: #fff; border: none; padding: 14px; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+    .btn:hover { background: #1d4ed8; }
+    .btn:disabled { background: #94a3b8; cursor: not-allowed; }
+    .btn-green { background: #10b981; }
+    .btn-green:hover { background: #059669; }
+    .qr-container { display: none; text-align: center; }
+    .qr-box { background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 16px; padding: 20px; margin: 16px 0; }
+    .qr-box img { width: 220px; height: 220px; border-radius: 12px; background: #fff; padding: 6px; }
+    .upi-apps { display: flex; justify-content: center; gap: 8px; margin: 12px 0; }
+    .upi-btn { background: #1e293b; color: #fff; padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+    .upi-btn:hover { background: #334155; }
+    .status-badge { display: inline-block; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; margin-top: 10px; }
+    .status-pending { background: #fef3c7; color: #92400e; }
+    .status-paid { background: #d1fae5; color: #065f46; font-size: 15px; }
+    .utr-box { margin-top: 16px; text-align: left; background: #f1f5f9; padding: 16px; border-radius: 12px; }
+    .utr-box input { background: #fff; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="header">
+      <span class="badge">Direct NPCI UPI</span>
+      <h2 id="merchantTitle">RK SOLUTIONS</h2>
+      <p>Direct bank-to-bank payment with 0% gateway fees</p>
+    </div>
+
+    <!-- Step 1: Input Order -->
+    <div id="checkoutForm">
+      <div class="form-group">
+        <label>Amount (INR)</label>
+        <input type="number" id="amount" value="10" min="1" step="1" required />
+      </div>
+      <div class="form-group">
+        <label>Purpose / Note</label>
+        <input type="text" id="purpose" value="Test Payment" required />
+      </div>
+      <button class="btn" id="payBtn" onclick="initiatePayment()">Generate UPI QR Code</button>
+    </div>
+
+    <!-- Step 2: Display Dynamic QR Code -->
+    <div class="qr-container" id="qrContainer">
+      <div class="qr-box">
+        <p style="font-size: 13px; color: #64748b; margin-bottom: 12px; font-weight: 600;">
+          Scan with Google Pay, PhonePe, Paytm or BHIM
+        </p>
+        <img id="qrImage" src="" alt="Dynamic UPI QR" />
+        <div style="margin-top: 8px; font-size: 13px; color: #334155; font-weight: 600;">
+          Amount: <span id="displayAmount" style="color: #2563eb; font-size: 16px;"></span>
+        </div>
+      </div>
+
+      <div class="upi-apps" id="intentApps">
+        <a id="intentLink" class="upi-btn" href="#">⚡ Pay on Mobile App</a>
+      </div>
+
+      <div>
+        <span class="status-badge status-pending" id="statusBadge">⏳ Waiting for payment...</span>
+      </div>
+
+      <!-- Step 3: Enter UTR / Reference ID -->
+      <div class="utr-box" id="utrBox">
+        <label style="font-size: 12px; color: #475569;">After paying, enter the 12-digit UPI UTR / Ref Number:</label>
+        <input type="text" id="utrInput" placeholder="e.g. 412345678901" maxlength="16" />
+        <button class="btn btn-green" id="verifyBtn" onclick="verifyPayment()">Confirm Payment</button>
+      </div>
+
+      <!-- Success Screen -->
+      <div id="successBox" style="display: none; margin-top: 20px; text-align: center;">
+        <div style="font-size: 48px; margin-bottom: 8px;">🎉</div>
+        <h3 style="color: #065f46; font-size: 20px; margin-bottom: 6px;">Payment Confirmed!</h3>
+        <p style="color: #64748b; font-size: 13px;">Funds deposited directly into your bank account.</p>
+        <p id="confirmedUtr" style="font-size: 13px; font-weight: 700; color: #334155; margin-top: 8px;"></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentReferenceId = null;
+
+    async function initiatePayment() {
+      const amount = document.getElementById('amount').value;
+      const purpose = document.getElementById('purpose').value;
+      const payBtn = document.getElementById('payBtn');
+
+      if (!amount || amount <= 0) {
+        alert('Please enter a valid amount');
+        return;
+      }
+
+      payBtn.disabled = true;
+      payBtn.innerText = 'Generating QR...';
+
+      try {
+        const res = await fetch('/api/create-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount, purpose })
+        });
+        const data = await res.json();
+
+        if (data.success && data.qrImage) {
+          currentReferenceId = data.referenceId;
+
+          document.getElementById('checkoutForm').style.display = 'none';
+          document.getElementById('qrContainer').style.display = 'block';
+          document.getElementById('qrImage').src = data.qrImage;
+          document.getElementById('displayAmount').innerText = '₹' + parseFloat(data.amount).toFixed(2);
+          document.getElementById('merchantTitle').innerText = data.payeeName;
+          document.getElementById('intentLink').href = data.upiUri;
+        } else {
+          alert('Error: ' + (data.message || 'Could not generate payment'));
+          payBtn.disabled = false;
+          payBtn.innerText = 'Generate UPI QR Code';
+        }
+      } catch (err) {
+        alert('Failed to connect to server: ' + err.message);
+        payBtn.disabled = false;
+        payBtn.innerText = 'Generate UPI QR Code';
+      }
+    }
+
+    async function verifyPayment() {
+      const utr = document.getElementById('utrInput').value;
+      const verifyBtn = document.getElementById('verifyBtn');
+
+      if (!utr || utr.trim().length < 8) {
+        alert('Please enter the 12-digit UPI UTR number from your payment receipt');
+        return;
+      }
+
+      verifyBtn.disabled = true;
+      verifyBtn.innerText = 'Verifying...';
+
+      try {
+        const res = await fetch('/api/verify-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ referenceId: currentReferenceId, utr })
+        });
+        const data = await res.json();
+
+        if (data.success && data.status === 'PAID') {
+          document.getElementById('utrBox').style.display = 'none';
+          document.getElementById('statusBadge').style.display = 'none';
+          document.getElementById('intentApps').style.display = 'none';
+          document.getElementById('successBox').style.display = 'block';
+          document.getElementById('confirmedUtr').innerText = 'UTR: ' + data.utr;
+        } else {
+          alert('Verification error: ' + data.message);
+          verifyBtn.disabled = false;
+          verifyBtn.innerText = 'Confirm Payment';
+        }
+      } catch (err) {
+        alert('Error verifying payment: ' + err.message);
+        verifyBtn.disabled = false;
+        verifyBtn.innerText = 'Confirm Payment';
+      }
+    }
+  </script>
+</body>
+</html>
