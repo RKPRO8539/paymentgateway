@@ -11,6 +11,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 const PORT = process.env.PORT || 3000;
 const UPI_VPA = process.env.UPI_VPA || '8539943807@kotakbank';
 const PAYEE_NAME = process.env.PAYEE_NAME || 'REKHA DEVI';
+const PAYEE_MOBILE = process.env.PAYEE_MOBILE || '8539943807';
 
 // In-memory order tracking (In production, replace with MongoDB or PostgreSQL)
 const orders = new Map();
@@ -64,6 +65,7 @@ app.post('/api/create-payment', async (req, res) => {
       referenceId,
       amount: orderAmount,
       payeeVpa: UPI_VPA,
+      payeeMobile: PAYEE_MOBILE,
       payeeName: PAYEE_NAME,
       upiUri,
       qrImage,

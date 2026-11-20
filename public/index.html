@@ -92,12 +92,24 @@
           </a>
         </div>
 
+        <!-- Copy Phone Number Box -->
+        <div class="copy-box" style="background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <span style="font-size: 11px; font-weight: 700; color: #1e40af; text-transform: uppercase; letter-spacing: 0.5px;">Pay via Phone Number (UPI)</span>
+            <div style="font-size: 16px; font-weight: 800; color: #1e3a8a; margin-top: 2px;">
+              📱 <span id="mobileDisplay">8539943807</span>
+            </div>
+            <div style="font-size: 11px; color: #64748b; margin-top: 2px;">GPay / PhonePe / Paytm / BHIM</div>
+          </div>
+          <button class="copy-btn" onclick="copyText('8539943807', 'Mobile Number')" style="background: #2563eb; color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer;">Copy Number</button>
+        </div>
+
         <!-- Copy UPI ID Box -->
         <div class="copy-box" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center;">
           <div style="font-size: 12px; color: #475569;">
             UPI ID: <strong id="vpaDisplay" style="color: #0f172a;">8539943807@kotakbank</strong>
           </div>
-          <button class="copy-btn" onclick="copyVpa()" style="background: #e2e8f0; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer;">Copy</button>
+          <button class="copy-btn" onclick="copyText(currentVpa, 'UPI ID')" style="background: #e2e8f0; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer;">Copy VPA</button>
         </div>
       </div>
 
@@ -147,9 +159,9 @@
       document.getElementById('tabQr').className = 'tab-btn' + (!isMobile ? ' active' : '');
     }
 
-    function copyVpa() {
-      navigator.clipboard.writeText(currentVpa);
-      alert('UPI ID copied to clipboard: ' + currentVpa);
+    function copyText(text, label) {
+      navigator.clipboard.writeText(text);
+      alert(label + ' copied to clipboard: ' + text);
     }
 
     async function initiatePayment() {
