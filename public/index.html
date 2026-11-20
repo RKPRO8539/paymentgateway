@@ -21,6 +21,10 @@
     .btn:disabled { background: #94a3b8; cursor: not-allowed; }
     .btn-green { background: #10b981; }
     .btn-green:hover { background: #059669; }
+    .tab-btn { flex: 1; padding: 10px; border: none; background: #f1f5f9; color: #475569; font-weight: 700; border-radius: 8px; cursor: pointer; font-size: 13px; transition: 0.2s; }
+    .tab-btn.active { background: #2563eb; color: #ffffff; }
+    .app-card { display: flex; align-items: center; gap: 10px; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 12px 14px; text-decoration: none; color: #1e293b; font-size: 14px; font-weight: 700; transition: 0.2s; }
+    .app-card:hover { border-color: #2563eb; background: #f0f7ff; }
     .qr-container { display: none; text-align: center; }
     .qr-box { background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 16px; padding: 20px; margin: 16px 0; }
     .qr-box img { width: 220px; height: 220px; border-radius: 12px; background: #fff; padding: 6px; }
@@ -58,21 +62,56 @@
 
     <!-- Step 2: Display Dynamic QR Code -->
     <div class="qr-container" id="qrContainer">
-      <div class="qr-box">
+      <!-- Step 2: Pay Options -->
+      <div class="tabs" style="display: flex; gap: 8px; margin-bottom: 16px;">
+        <button class="tab-btn active" id="tabMobile" onclick="switchTab('mobile')">📱 Pay via Mobile App</button>
+        <button class="tab-btn" id="tabQr" onclick="switchTab('qr')">📷 Scan QR Code</button>
+      </div>
+
+      <!-- Mobile Pay Section -->
+      <div id="mobileSection" style="margin-bottom: 20px;">
         <p style="font-size: 13px; color: #64748b; margin-bottom: 12px; font-weight: 600;">
-          Scan with Google Pay, PhonePe, Paytm or BHIM
+          Tap any app to pay directly:
         </p>
-        <img id="qrImage" src="" alt="Dynamic UPI QR" />
-        <div style="margin-top: 8px; font-size: 13px; color: #334155; font-weight: 600;">
-          Amount: <span id="displayAmount" style="color: #2563eb; font-size: 16px;"></span>
+        <div class="mobile-app-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;">
+          <a id="gpayBtn" class="app-card" href="#">
+            <span style="font-size: 20px;">🔵</span>
+            <strong>Google Pay</strong>
+          </a>
+          <a id="phonepeBtn" class="app-card" href="#">
+            <span style="font-size: 20px;">🟣</span>
+            <strong>PhonePe</strong>
+          </a>
+          <a id="paytmBtn" class="app-card" href="#">
+            <span style="font-size: 20px;">🔷</span>
+            <strong>Paytm</strong>
+          </a>
+          <a id="allUpiBtn" class="app-card" href="#">
+            <span style="font-size: 20px;">⚡</span>
+            <strong>Other UPI App</strong>
+          </a>
+        </div>
+
+        <!-- Copy UPI ID Box -->
+        <div class="copy-box" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center;">
+          <div style="font-size: 12px; color: #475569;">
+            UPI ID: <strong id="vpaDisplay" style="color: #0f172a;">8539943807@kotakbank</strong>
+          </div>
+          <button class="copy-btn" onclick="copyVpa()" style="background: #e2e8f0; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer;">Copy</button>
         </div>
       </div>
 
-      <div class="upi-apps" id="intentApps" style="flex-wrap: wrap; justify-content: center; gap: 8px;">
-        <a id="intentLink" class="upi-btn" href="#">⚡ Open Default UPI App</a>
-        <a id="gpayLink" class="upi-btn" style="background: #4285F4;" href="#">GPay</a>
-        <a id="phonepeLink" class="upi-btn" style="background: #5f259f;" href="#">PhonePe</a>
-        <a id="paytmLink" class="upi-btn" style="background: #00baf2;" href="#">Paytm</a>
+      <!-- QR Code Section -->
+      <div id="qrSection" style="display: none;">
+        <div class="qr-box">
+          <p style="font-size: 13px; color: #64748b; margin-bottom: 12px; font-weight: 600;">
+            Scan with any UPI App
+          </p>
+          <img id="qrImage" src="" alt="Dynamic UPI QR" />
+          <div style="margin-top: 8px; font-size: 13px; color: #334155; font-weight: 600;">
+            Amount: <span id="displayAmount" style="color: #2563eb; font-size: 16px;"></span>
+          </div>
+        </div>
       </div>
 
       <div>
@@ -98,6 +137,20 @@
 
   <script>
     let currentReferenceId = null;
+    let currentVpa = '8539943807@kotakbank';
+
+    function switchTab(tab) {
+      const isMobile = tab === 'mobile';
+      document.getElementById('mobileSection').style.display = isMobile ? 'block' : 'none';
+      document.getElementById('qrSection').style.display = isMobile ? 'none' : 'block';
+      document.getElementById('tabMobile').className = 'tab-btn' + (isMobile ? ' active' : '');
+      document.getElementById('tabQr').className = 'tab-btn' + (!isMobile ? ' active' : '');
+    }
+
+    function copyVpa() {
+      navigator.clipboard.writeText(currentVpa);
+      alert('UPI ID copied to clipboard: ' + currentVpa);
+    }
 
     async function initiatePayment() {
       const amount = document.getElementById('amount').value;
@@ -122,6 +175,10 @@
 
         if (data.success && data.qrImage) {
           currentReferenceId = data.referenceId;
+          if (data.payeeVpa) {
+            currentVpa = data.payeeVpa;
+            document.getElementById('vpaDisplay').innerText = data.payeeVpa;
+          }
 
           document.getElementById('checkoutForm').style.display = 'none';
           document.getElementById('qrContainer').style.display = 'block';
@@ -129,13 +186,17 @@
           document.getElementById('displayAmount').innerText = '₹' + parseFloat(data.amount).toFixed(2);
           document.getElementById('merchantTitle').innerText = data.payeeName;
           const rawUri = data.upiUri;
-          document.getElementById('intentLink').href = rawUri;
+          document.getElementById('allUpiBtn').href = rawUri;
 
           // App-specific direct packages
           const queryPart = rawUri.replace(/^upi:\/\/pay\?/, '');
-          document.getElementById('gpayLink').href = 'tez://upi/pay?' + queryPart;
-          document.getElementById('phonepeLink').href = 'phonepe://pay?' + queryPart;
-          document.getElementById('paytmLink').href = 'paytmmp://pay?' + queryPart;
+          document.getElementById('gpayBtn').href = 'tez://upi/pay?' + queryPart;
+          document.getElementById('phonepeBtn').href = 'phonepe://pay?' + queryPart;
+          document.getElementById('paytmBtn').href = 'paytmmp://pay?' + queryPart;
+
+          // Auto-select tab: mobile tab for phones, QR for desktop
+          const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+          switchTab(isMobileDevice ? 'mobile' : 'qr');
         } else {
           alert('Error: ' + (data.message || 'Could not generate payment'));
           payBtn.disabled = false;
