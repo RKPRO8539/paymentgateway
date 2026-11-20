@@ -9,8 +9,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 const PORT = process.env.PORT || 3000;
-const UPI_VPA = process.env.UPI_VPA || 'rksolutions@upi';
-const PAYEE_NAME = process.env.PAYEE_NAME || 'RK SOLUTIONS';
+const UPI_VPA = process.env.UPI_VPA || '8539943807@kotak';
+const PAYEE_NAME = process.env.PAYEE_NAME || 'REKHA DEVI';
 
 // In-memory order tracking (In production, replace with MongoDB or PostgreSQL)
 const orders = new Map();
