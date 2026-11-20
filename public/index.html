@@ -75,6 +75,32 @@
         <a id="paytmLink" class="upi-btn" style="background: #00baf2;" href="#">Paytm</a>
       </div>
 
+      <!-- High Amount / PhonePe Workaround Notice & Direct Copy -->
+      <div id="largeAmountBox" style="background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 12px; padding: 14px; margin: 14px 0; text-align: left;">
+        <div style="font-size: 12px; font-weight: 700; color: #1e40af; margin-bottom: 6px;">
+          💡 For payments above ₹2,000 on Mobile:
+        </div>
+        <p style="font-size: 11.5px; color: #475569; margin-bottom: 10px; line-height: 1.4;">
+          NPCI restricts gallery QR uploads to ₹2,000. To pay any amount (up to ₹1,00,000), tap any app button above, or copy the UPI ID / Number:
+        </p>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 6px;">
+          <div>
+            <span style="font-size: 11px; color: #64748b;">UPI ID:</span>
+            <strong id="copyVpaText" style="font-size: 13px; color: #0f172a; margin-left: 4px;">8539943807@kotakbank</strong>
+          </div>
+          <button type="button" onclick="copyUPI('8539943807@kotakbank', 'UPI ID')" style="background: #2563eb; color: #fff; border: none; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer;">Copy</button>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1;">
+          <div>
+            <span style="font-size: 11px; color: #64748b;">Phone Number:</span>
+            <strong style="font-size: 13px; color: #0f172a; margin-left: 4px;">8539943807</strong>
+          </div>
+          <button type="button" onclick="copyUPI('8539943807', 'Phone Number')" style="background: #2563eb; color: #fff; border: none; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer;">Copy</button>
+        </div>
+      </div>
+
       <div>
         <span class="status-badge status-pending" id="statusBadge">⏳ Waiting for payment...</span>
       </div>
@@ -98,6 +124,14 @@
 
   <script>
     let currentReferenceId = null;
+
+    function copyUPI(text, label) {
+      navigator.clipboard.writeText(text).then(() => {
+        alert(label + ' copied: ' + text + '\nOpen PhonePe -> Pay to Mobile / UPI ID');
+      }).catch(() => {
+        prompt('Copy manually:', text);
+      });
+    }
 
     async function initiatePayment() {
       const amount = document.getElementById('amount').value;
